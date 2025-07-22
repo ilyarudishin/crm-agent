@@ -24,13 +24,17 @@ export const config: AppConfig = {
 export const validateConfig = (): void => {
   const required = [
     'NOTION_API_KEY',
-    'NOTION_DATABASE_ID', 
-    'TELEGRAM_BOT_TOKEN'
+    'NOTION_DATABASE_ID'
   ];
   
   const missing = required.filter(key => !process.env[key]);
   
   if (missing.length > 0) {
     throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
+  }
+  
+  // Warn about optional Telegram token
+  if (!process.env.TELEGRAM_BOT_TOKEN) {
+    console.warn('⚠️  TELEGRAM_BOT_TOKEN not provided - Telegram features disabled');
   }
 };

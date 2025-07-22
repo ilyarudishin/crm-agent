@@ -10,10 +10,14 @@ class SmartGroupAssistant {
   private activeGroups: Map<number, GroupInfo> = new Map();
 
   constructor() {
-    this.bot = new TelegramBot(config.telegram.botToken, { polling: true });
+    if (config.telegram.botToken && config.telegram.botToken !== 'dummy_for_now') {
+      this.bot = new TelegramBot(config.telegram.botToken, { polling: true });
+      this.setupEventHandlers();
+    } else {
+      console.warn('⚠️  Telegram bot disabled - no valid token provided');
+    }
     this.notionService = new NotionService();
     this.adminId = process.env.TELEGRAM_ADMIN_USER_ID || '';
-    this.setupEventHandlers();
   }
 
   private setupEventHandlers() {
