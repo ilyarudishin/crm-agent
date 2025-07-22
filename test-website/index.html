@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Agent Test - Lead Capture Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        input:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+        
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .btn:hover {
+            background-color: #45a049;
+        }
+        
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>🚀 Test Your CRM Agent</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">
+            Fill out this form to test your lead capture system
+        </p>
+        
+        <form id="leadForm">
+            <div class="form-group">
+                <label for="name">Full Name *</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email Address *</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="company">Company</label>
+                <input type="text" id="company" name="company">
+            </div>
+            
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone">
+            </div>
+            
+            <div class="form-group">
+                <label for="telegramId">Telegram Username (optional)</label>
+                <input type="text" id="telegramId" name="telegramId" placeholder="@yourusername">
+            </div>
+            
+            <div class="form-group">
+                <label for="source">How did you hear about us?</label>
+                <select id="source" name="source">
+                    <option value="Website Form">Website Form</option>
+                    <option value="Google Search">Google Search</option>
+                    <option value="Social Media">Social Media</option>
+                    <option value="Referral">Referral</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn" id="submitBtn">
+                Submit Lead
+            </button>
+            
+            <div class="loading" id="loading">
+                <p>⏳ Processing your information...</p>
+            </div>
+        </form>
+        
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('leadForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const loading = document.getElementById('loading');
+        const result = document.getElementById('result');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing...';
+            loading.style.display = 'block';
+            result.style.display = 'none';
+            
+            // Collect form data
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                company: document.getElementById('company').value,
+                phone: document.getElementById('phone').value,
+                telegramId: document.getElementById('telegramId').value,
+                source: document.getElementById('source').value,
+                utmSource: 'test-website',
+                utmMedium: 'form'
+            };
+            
+            try {
+                // Send to your CRM agent
+                const response = await fetch('http://localhost:3000/api/webhooks/lead', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const responseData = await response.json();
+                
+                // Hide loading
+                loading.style.display = 'none';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Lead';
+                
+                // Show result
+                result.style.display = 'block';
+                
+                if (response.ok && responseData.success) {
+                    result.className = 'result success';
+                    result.innerHTML = `
+                        <h3>✅ Success!</h3>
+                        <p><strong>Lead processed successfully!</strong></p>
+                        <p>📧 Email: ${formData.email}</p>
+                        <p>📝 Check your Notion database for the new lead</p>
+                        <p>💬 Check Telegram for notifications</p>
+                        ${responseData.data ? `<p>🆔 Lead ID: ${responseData.data.leadId}</p>` : ''}
+                    `;
+                    
+                    // Reset form
+                    form.reset();
+                } else {
+                    throw new Error(responseData.error || 'Unknown error');
+                }
+                
+            } catch (error) {
+                // Hide loading
+                loading.style.display = 'none';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Lead';
+                
+                // Show error
+                result.style.display = 'block';
+                result.className = 'result error';
+                result.innerHTML = `
+                    <h3>❌ Error</h3>
+                    <p><strong>Something went wrong:</strong></p>
+                    <p>${error.message}</p>
+                    <p>Make sure your CRM agent server is running on localhost:3000</p>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

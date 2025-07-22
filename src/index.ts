@@ -1,0 +1,67 @@
+import express, { Request, Response, NextFunction } from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import { config, validateConfig } from './config/config.js';
+import webhooksRouter from './routes/webhooks.js';
+import adminRouter from './routes/admin.js';
+import groupsRouter, { setSmartGroupAssistant } from './routes/groups.js';
+import SmartGroupAssistant from './services/smartGroupAssistant.js';
+
+const app = express();
+
+try {
+  validateConfig();
+} catch (error) {
+  console.error('Configuration error:', error instanceof Error ? error.message : 'Unknown error');
+  process.exit(1);
+}
+
+app.use(helmet());
+app.use(cors());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+app.use('/api/webhooks', webhooksRouter);
+app.use('/api/admin', adminRouter);
+app.use('/api/groups', groupsRouter);
+
+app.get('/', (req: Request, res: Response) => {
+  res.json({
+    success: true,
+    message: 'CRM Agent API is running',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/webhooks/health',
+      leadWebhook: '/api/webhooks/lead',
+    },
+  });
+});
+
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({
+    success: false,
+    error: 'Internal server error',
+  });
+});
+
+app.use((req: Request, res: Response) => {
+  res.status(404).json({
+    success: false,
+    error: 'Endpoint not found',
+  });
+});
+
+// Initialize Smart Group Assistant
+const smartGroupAssistant = new SmartGroupAssistant();
+setSmartGroupAssistant(smartGroupAssistant);
+
+const PORT = config.port;
+app.listen(PORT, () => {
+  console.log(`🚀 CRM Agent server running on port ${PORT}`);
+  console.log(`📊 Environment: ${config.nodeEnv}`);
+  console.log(`🔗 Health check: http://localhost:${PORT}/api/webhooks/health`);
+  console.log(`🤖 Smart Group Assistant initialized`);
+});
+
+export default app;
