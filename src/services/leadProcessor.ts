@@ -41,16 +41,18 @@ export async function processNewLead(rawLeadData) {
     // Handle Telegram with smart service
     const telegramResult = await smartTelegramService.handleNewLead(enrichedData);
     
-    // Update Notion with Telegram status
+    // Update Notion with Telegram status - using default "New Lead" to avoid validation errors
     if (telegramResult.success) {
       const statusMap = {
         'direct_message': 'Telegram Contact Initiated',
         'dm_failed': 'Telegram DM Failed',
-        'admin_only': 'No Telegram Provided'
+        'admin_only': 'New Lead' // Using default status instead of non-existent option
       };
       
-      const status = statusMap[telegramResult.method] || 'Telegram Processed';
-      const notes = `Method: ${telegramResult.method}`;
+      const status = statusMap[telegramResult.method] || 'New Lead';
+      const notes = telegramResult.method === 'admin_only' ? 
+        `No Telegram provided - Method: ${telegramResult.method}` : 
+        `Method: ${telegramResult.method}`;
       
       await notionService.updateLeadStatus(notionResult.pageId, status, notes);
     }
