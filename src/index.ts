@@ -52,9 +52,16 @@ app.use((req: Request, res: Response) => {
   });
 });
 
-// Initialize Smart Group Assistant
-const smartGroupAssistant = new SmartGroupAssistant();
-setSmartGroupAssistant(smartGroupAssistant);
+// Initialize Smart Group Assistant with error handling
+try {
+  console.log('🤖 Initializing Smart Group Assistant...');
+  const smartGroupAssistant = new SmartGroupAssistant();
+  setSmartGroupAssistant(smartGroupAssistant);
+  console.log('✅ Smart Group Assistant initialized successfully');
+} catch (error) {
+  console.error('❌ Failed to initialize Smart Group Assistant:', error);
+  console.log('⚠️ Continuing without Smart Group Assistant...');
+}
 
 const PORT = config.port;
 app.listen(PORT, () => {

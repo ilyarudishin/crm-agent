@@ -10,22 +10,34 @@ class SmartGroupAssistant {
   private activeGroups: Map<number, GroupInfo> = new Map();
 
   constructor() {
-    console.log(`🔍 SmartGroupAssistant Debug: Bot token exists: ${!!config.telegram.botToken}`);
-    console.log(`🔍 SmartGroupAssistant Debug: Bot token value: ${config.telegram.botToken?.substring(0, 10)}...`);
-    
-    if (config.telegram.botToken && config.telegram.botToken !== 'dummy_for_now') {
-      console.log('✅ SmartGroupAssistant: Initializing bot with polling');
-      this.bot = new TelegramBot(config.telegram.botToken, { polling: true });
-      this.setupEventHandlers();
-      console.log('✅ SmartGroupAssistant: Event handlers set up');
-    } else {
-      console.warn('⚠️  SmartGroupAssistant: Telegram bot disabled - no valid token provided');
+    try {
+      console.log(`🔍 SmartGroupAssistant Debug: Bot token exists: ${!!config.telegram.botToken}`);
+      console.log(`🔍 SmartGroupAssistant Debug: Bot token value: ${config.telegram.botToken?.substring(0, 10)}...`);
+      
+      if (config.telegram.botToken && config.telegram.botToken !== 'dummy_for_now') {
+        console.log('✅ SmartGroupAssistant: Initializing bot with polling');
+        this.bot = new TelegramBot(config.telegram.botToken, { polling: true });
+        this.setupEventHandlers();
+        console.log('✅ SmartGroupAssistant: Event handlers set up');
+      } else {
+        console.warn('⚠️  SmartGroupAssistant: Telegram bot disabled - no valid token provided');
+      }
+      this.notionService = new NotionService();
+      this.adminId = process.env.TELEGRAM_ADMIN_USER_ID || '';
+    } catch (error) {
+      console.error('❌ Error in SmartGroupAssistant constructor:', error);
+      // Initialize basic properties even if bot fails
+      this.notionService = new NotionService();
+      this.adminId = process.env.TELEGRAM_ADMIN_USER_ID || '';
     }
-    this.notionService = new NotionService();
-    this.adminId = process.env.TELEGRAM_ADMIN_USER_ID || '';
   }
 
   private setupEventHandlers() {
+    if (!this.bot) {
+      console.warn('⚠️ Cannot setup event handlers - bot not initialized');
+      return;
+    }
+    
     // When bot is added to a new group
     this.bot.on('new_chat_members', async (msg) => {
       const newMembers = msg.new_chat_members || [];
