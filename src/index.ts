@@ -37,6 +37,19 @@ app.get('/', (req: Request, res: Response) => {
   });
 });
 
+// Test endpoint to check if bot can send messages
+app.get('/test-bot', async (req: Request, res: Response) => {
+  try {
+    const TelegramBot = (await import('node-telegram-bot-api')).default;
+    const testBot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN || '', { polling: false });
+    
+    await testBot.sendMessage('1194123244', 'Test message from /test-bot endpoint');
+    res.json({ success: true, message: 'Test message sent!' });
+  } catch (error) {
+    res.json({ success: false, error: error.message });
+  }
+});
+
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error('Unhandled error:', err);
   res.status(500).json({
