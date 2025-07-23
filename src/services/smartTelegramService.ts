@@ -108,7 +108,13 @@ Add: @${leadData.telegramId} + yourself
 
   async notifyAdminOnly(leadData: EnrichedLeadData) {
     const adminId = process.env.TELEGRAM_ADMIN_USER_ID;
-    if (!adminId) return;
+    console.log(`🔍 Debug: Admin ID is ${adminId}`);
+    console.log(`🔍 Debug: Bot token exists: ${!!config.telegram.botToken}`);
+    
+    if (!adminId) {
+      console.error('❌ No TELEGRAM_ADMIN_USER_ID provided');
+      return;
+    }
 
     const notification = `
 🆕 <b>NEW LEAD (No Telegram)</b>
@@ -125,9 +131,11 @@ Add: @${leadData.telegramId} + yourself
     `.trim();
 
     try {
+      console.log(`📤 Attempting to send notification to admin ${adminId}`);
       await this.bot.sendMessage(adminId, notification, { parse_mode: 'HTML' });
+      console.log('✅ Admin notification sent successfully');
     } catch (error) {
-      console.error('Error notifying admin:', error);
+      console.error('❌ Error notifying admin:', error);
     }
   }
 }
