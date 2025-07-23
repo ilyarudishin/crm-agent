@@ -53,6 +53,11 @@ class SmartGroupAssistant {
 
     // Handle all messages in groups and private chats
     this.bot.on('message', async (msg) => {
+      // Skip messages from bots (including this bot itself)
+      if (msg.from?.is_bot) {
+        return;
+      }
+      
       console.log(`📨 SmartGroupAssistant: Received message from ${msg.from?.first_name}: ${msg.text}`);
       console.log(`📨 Chat type: ${msg.chat.type}`);
       
