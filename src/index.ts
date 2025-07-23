@@ -52,17 +52,16 @@ app.use((req: Request, res: Response) => {
   });
 });
 
-// TEMPORARILY DISABLE Smart Group Assistant to stop spam
-console.log('🛑 Smart Group Assistant temporarily disabled to prevent message loop');
-// try {
-//   console.log('🤖 Initializing Smart Group Assistant...');
-//   const smartGroupAssistant = new SmartGroupAssistant();
-//   setSmartGroupAssistant(smartGroupAssistant);
-//   console.log('✅ Smart Group Assistant initialized successfully');
-// } catch (error) {
-//   console.error('❌ Failed to initialize Smart Group Assistant:', error);
-//   console.log('⚠️ Continuing without Smart Group Assistant...');
-// }
+// Initialize Smart Group Assistant with error handling
+try {
+  console.log('🤖 Initializing Smart Group Assistant...');
+  const smartGroupAssistant = new SmartGroupAssistant();
+  setSmartGroupAssistant(smartGroupAssistant);
+  console.log('✅ Smart Group Assistant initialized successfully');
+} catch (error) {
+  console.error('❌ Failed to initialize Smart Group Assistant:', error);
+  console.log('⚠️ Continuing without Smart Group Assistant...');
+}
 
 const PORT = config.port;
 app.listen(PORT, () => {
