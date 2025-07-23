@@ -54,23 +54,28 @@ class SmartGroupAssistant {
     // Handle all messages in groups and private chats
     this.bot.on('message', async (msg) => {
       try {
+        console.log(`🔍 DEBUG: Raw message received from ${msg.from?.first_name} (bot: ${msg.from?.is_bot}): "${msg.text}"`);
+        
         // Skip messages from bots (including this bot itself)
         if (msg.from?.is_bot) {
+          console.log(`⏭️ Skipping bot message`);
           return;
         }
         
         // Skip empty messages or system messages
         if (!msg.text || msg.text.trim() === '') {
+          console.log(`⏭️ Skipping empty message`);
           return;
         }
         
-        // Get bot info to compare IDs
-        const botInfo = await this.bot.getMe().catch(() => null);
-        if (botInfo && msg.from?.id === botInfo.id) {
-          return;
-        }
+        // Get bot info to compare IDs (simplified - remove this check for now)
+        // const botInfo = await this.bot.getMe().catch(() => null);
+        // if (botInfo && msg.from?.id === botInfo.id) {
+        //   console.log(`⏭️ Skipping message from bot ID`);
+        //   return;
+        // }
         
-        console.log(`📨 SmartGroupAssistant: Received message from ${msg.from?.first_name} (ID: ${msg.from?.id}): ${msg.text}`);
+        console.log(`📨 SmartGroupAssistant: Processing message from ${msg.from?.first_name} (ID: ${msg.from?.id}): ${msg.text}`);
         console.log(`📨 Chat type: ${msg.chat.type}`);
         
         if (msg.chat.type === 'group' && msg.text && !msg.new_chat_members) {
@@ -79,6 +84,8 @@ class SmartGroupAssistant {
         } else if (msg.chat.type === 'private' && msg.text) {
           console.log(`🔄 Processing private message: ${msg.text}`);
           await this.handlePrivateMessage(msg);
+        } else {
+          console.log(`⏭️ Message doesn't match processing criteria`);
         }
       } catch (error) {
         console.error('❌ Error handling message:', error);
