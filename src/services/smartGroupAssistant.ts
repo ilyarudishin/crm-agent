@@ -10,11 +10,16 @@ class SmartGroupAssistant {
   private activeGroups: Map<number, GroupInfo> = new Map();
 
   constructor() {
+    console.log(`🔍 SmartGroupAssistant Debug: Bot token exists: ${!!config.telegram.botToken}`);
+    console.log(`🔍 SmartGroupAssistant Debug: Bot token value: ${config.telegram.botToken?.substring(0, 10)}...`);
+    
     if (config.telegram.botToken && config.telegram.botToken !== 'dummy_for_now') {
+      console.log('✅ SmartGroupAssistant: Initializing bot with polling');
       this.bot = new TelegramBot(config.telegram.botToken, { polling: true });
       this.setupEventHandlers();
+      console.log('✅ SmartGroupAssistant: Event handlers set up');
     } else {
-      console.warn('⚠️  Telegram bot disabled - no valid token provided');
+      console.warn('⚠️  SmartGroupAssistant: Telegram bot disabled - no valid token provided');
     }
     this.notionService = new NotionService();
     this.adminId = process.env.TELEGRAM_ADMIN_USER_ID || '';
@@ -36,7 +41,11 @@ class SmartGroupAssistant {
 
     // Handle all messages in groups
     this.bot.on('message', async (msg) => {
+      console.log(`📨 SmartGroupAssistant: Received message from ${msg.from?.first_name}: ${msg.text}`);
+      console.log(`📨 Chat type: ${msg.chat.type}`);
+      
       if (msg.chat.type === 'group' && msg.text && !msg.new_chat_members) {
+        console.log(`🔄 Processing group message: ${msg.text}`);
         await this.handleGroupMessage(msg);
       }
     });
