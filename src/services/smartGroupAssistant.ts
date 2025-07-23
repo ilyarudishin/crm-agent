@@ -183,14 +183,24 @@ What can I help you with today? 💬
 
     const groupInfo = this.activeGroups.get(chatId);
     if (!groupInfo) {
-      console.log(`❌ No group info found for chat ${chatId} - bot not initialized for this chat`);
-      return;
+      console.log(`⚠️ No group info found for chat ${chatId} - creating temporary group info`);
+      // Create temporary group info for any group the bot is in
+      const tempGroupInfo: GroupInfo = {
+        chatId,
+        chatTitle: msg.chat.title || 'Support Group',
+        leadInfo: null,
+        createdAt: new Date().toISOString(),
+        lastActivity: new Date().toISOString(),
+        status: 'active'
+      };
+      this.activeGroups.set(chatId, tempGroupInfo);
     }
 
     // Update last activity
-    groupInfo.lastActivity = new Date().toISOString();
+    const currentGroupInfo = this.activeGroups.get(chatId)!;
+    currentGroupInfo.lastActivity = new Date().toISOString();
 
-    console.log(`💬 Message in ${groupInfo.chatTitle}: ${text}`);
+    console.log(`💬 Message in ${currentGroupInfo.chatTitle}: ${text}`);
 
     // Handle different types of messages
     if (this.isQuestionMessage(text)) {
