@@ -39,7 +39,7 @@ class SmartGroupAssistant {
       }
     });
 
-    // Handle all messages in groups
+    // Handle all messages in groups and private chats
     this.bot.on('message', async (msg) => {
       console.log(`📨 SmartGroupAssistant: Received message from ${msg.from?.first_name}: ${msg.text}`);
       console.log(`📨 Chat type: ${msg.chat.type}`);
@@ -47,6 +47,9 @@ class SmartGroupAssistant {
       if (msg.chat.type === 'group' && msg.text && !msg.new_chat_members) {
         console.log(`🔄 Processing group message: ${msg.text}`);
         await this.handleGroupMessage(msg);
+      } else if (msg.chat.type === 'private' && msg.text) {
+        console.log(`🔄 Processing private message: ${msg.text}`);
+        await this.handlePrivateMessage(msg);
       }
     });
 
@@ -169,11 +172,20 @@ What can I help you with today? 💬
     const text = msg.text;
     const userName = msg.from.first_name || 'there';
 
+    console.log(`🔍 Debug: Chat ID: ${chatId}, User ID: ${userId}, Admin ID: ${this.adminId}`);
+    console.log(`🔍 Debug: Active groups: ${this.activeGroups.size}`);
+
     // Skip messages from admin or bot
-    if (userId.toString() === this.adminId) return;
+    if (userId.toString() === this.adminId) {
+      console.log(`⏭️ Skipping message from admin`);
+      return;
+    }
 
     const groupInfo = this.activeGroups.get(chatId);
-    if (!groupInfo) return;
+    if (!groupInfo) {
+      console.log(`❌ No group info found for chat ${chatId} - bot not initialized for this chat`);
+      return;
+    }
 
     // Update last activity
     groupInfo.lastActivity = new Date().toISOString();
@@ -270,6 +282,26 @@ What can I help you with today? 💬
   private async handleGeneralMessage(chatId: number, message: string, userName: string) {
     // Acknowledge the message
     await this.bot.sendMessage(chatId, `Thanks for that, ${userName}! 📝\n\nI've noted this and our team will follow up. Is there anything specific I can help you with right now?`);
+  }
+
+  private async handlePrivateMessage(msg: any) {
+    const chatId = msg.chat.id;
+    const text = msg.text;
+    const userName = msg.from.first_name || 'there';
+
+    console.log(`💬 Private message from ${userName}: ${text}`);
+
+    // Handle different types of messages
+    if (this.isQuestionMessage(text)) {
+      await this.handleQuestion(chatId, text, userName);
+    } else if (this.isUrgentMessage(text)) {
+      await this.handleUrgentRequest(chatId, text, userName);
+    } else if (this.isGreeting(text)) {
+      await this.handleGreeting(chatId, userName);
+    } else {
+      // Default: acknowledge and potentially route to human
+      await this.handleGeneralMessage(chatId, text, userName);
+    }
   }
 
   private getSmartResponse(question: string): { autoResponse?: string; followUp?: string } {
