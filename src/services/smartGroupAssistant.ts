@@ -16,8 +16,27 @@ class SmartGroupAssistant {
       
       if (config.telegram.botToken && config.telegram.botToken !== 'dummy_for_now') {
         console.log('✅ SmartGroupAssistant: Initializing bot with polling');
-        this.bot = new TelegramBot(config.telegram.botToken, { polling: true });
+        this.bot = new TelegramBot(config.telegram.botToken, { 
+          polling: {
+            interval: 1000,
+            autoStart: true,
+            params: {
+              timeout: 10
+            }
+          }
+        });
         this.setupEventHandlers();
+        
+        // Test bot immediately
+        setTimeout(async () => {
+          try {
+            const me = await this.bot.getMe();
+            console.log(`✅ Bot initialized: @${me.username} (${me.first_name})`);
+          } catch (error) {
+            console.error('❌ Bot test failed:', error);
+          }
+        }, 2000);
+        
         console.log('✅ SmartGroupAssistant: Event handlers set up');
       } else {
         console.warn('⚠️  SmartGroupAssistant: Telegram bot disabled - no valid token provided');
@@ -37,6 +56,17 @@ class SmartGroupAssistant {
       console.warn('⚠️ Cannot setup event handlers - bot not initialized');
       return;
     }
+    
+    console.log('🔧 Setting up event handlers...');
+    
+    // Test polling immediately
+    this.bot.on('polling_error', (error) => {
+      console.error('🚨 Polling error:', error);
+    });
+    
+    this.bot.on('webhook_error', (error) => {
+      console.error('🚨 Webhook error:', error);
+    });
     
     // When bot is added to a new group
     this.bot.on('new_chat_members', async (msg) => {
