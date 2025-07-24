@@ -277,7 +277,19 @@ What can I help you with today? 💬
 
     console.log(`💬 Message in ${currentGroupInfo.chatTitle}: ${text}`);
 
-    // Handle different types of messages
+    // ALWAYS check Mobula knowledge base first for any message
+    console.log(`🧠 Checking knowledge base for: "${text}"`);
+    const mobulaResponse = MobulaKnowledgeBase.getResponse(text);
+    
+    if (mobulaResponse.response) {
+      console.log(`✅ Found knowledge base response`);
+      await this.bot.sendMessage(chatId, `Hi ${userName}! 👋\n\n${mobulaResponse.response}\n\n${mobulaResponse.followUp || 'Is there anything else I can help with?'}`, {
+        parse_mode: 'Markdown'
+      });
+      return;
+    }
+
+    // Handle different types of messages if no knowledge base match
     if (this.isQuestionMessage(text)) {
       await this.handleQuestion(chatId, text, userName);
     } else if (this.isUrgentMessage(text)) {
@@ -285,12 +297,13 @@ What can I help you with today? 💬
     } else if (this.isGreeting(text)) {
       await this.handleGreeting(chatId, userName);
     } else {
+      console.log(`❓ No knowledge base match, using general message handler`);
       // Default: acknowledge and potentially route to human
       await this.handleGeneralMessage(chatId, text, userName);
     }
 
     // Notify admin of activity
-    await this.notifyAdminOfActivity(groupInfo, text, userName);
+    await this.notifyAdminOfActivity(currentGroupInfo, text, userName);
   }
 
   private isQuestionMessage(text: string): boolean {
@@ -376,7 +389,19 @@ What can I help you with today? 💬
 
     console.log(`💬 Private message from ${userName}: ${text}`);
 
-    // Handle different types of messages
+    // ALWAYS check Mobula knowledge base first for any message
+    console.log(`🧠 Checking knowledge base for: "${text}"`);
+    const mobulaResponse = MobulaKnowledgeBase.getResponse(text);
+    
+    if (mobulaResponse.response) {
+      console.log(`✅ Found knowledge base response`);
+      await this.bot.sendMessage(chatId, `Hi ${userName}! 👋\n\n${mobulaResponse.response}\n\n${mobulaResponse.followUp || 'Is there anything else I can help with?'}`, {
+        parse_mode: 'Markdown'
+      });
+      return;
+    }
+
+    // Handle different types of messages if no knowledge base match
     if (this.isQuestionMessage(text)) {
       await this.handleQuestion(chatId, text, userName);
     } else if (this.isUrgentMessage(text)) {
@@ -384,6 +409,7 @@ What can I help you with today? 💬
     } else if (this.isGreeting(text)) {
       await this.handleGreeting(chatId, userName);
     } else {
+      console.log(`❓ No knowledge base match, using general message handler`);
       // Default: acknowledge and potentially route to human
       await this.handleGeneralMessage(chatId, text, userName);
     }
