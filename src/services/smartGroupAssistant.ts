@@ -110,12 +110,13 @@ class SmartGroupAssistant {
         
         if (msg.chat.type === 'group' && msg.text && !msg.new_chat_members) {
           console.log(`🔄 Processing group message: ${msg.text}`);
+          console.log(`🔍 Group details: ID=${msg.chat.id}, Title="${msg.chat.title}"`);
           await this.handleGroupMessage(msg);
         } else if (msg.chat.type === 'private' && msg.text) {
           console.log(`🔄 Processing private message: ${msg.text}`);
           await this.handlePrivateMessage(msg);
         } else {
-          console.log(`⏭️ Message doesn't match processing criteria`);
+          console.log(`⏭️ Message doesn't match processing criteria: type=${msg.chat.type}, has_text=${!!msg.text}, new_members=${!!msg.new_chat_members}`);
         }
       } catch (error) {
         console.error('❌ Error handling message:', error);

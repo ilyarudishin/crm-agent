@@ -6,7 +6,9 @@ class SmartTelegramService {
   private bot: TelegramBot;
 
   constructor() {
+    // Use shared bot instance without polling to avoid conflicts
     this.bot = new TelegramBot(config.telegram.botToken, { polling: false });
+    console.log('📡 SmartTelegramService: Using bot without polling (shared with SmartGroupAssistant)');
   }
 
   async handleNewLead(leadData: EnrichedLeadData) {
