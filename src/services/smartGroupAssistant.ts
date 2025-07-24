@@ -245,10 +245,15 @@ What can I help you with today? 💬
     console.log(`🔍 Debug: Chat ID: ${chatId}, User ID: ${userId}, Admin ID: ${this.adminId}`);
     console.log(`🔍 Debug: Active groups: ${this.activeGroups.size}`);
 
-    // Skip messages from admin or bot
-    if (userId.toString() === this.adminId) {
-      console.log(`⏭️ Skipping message from admin`);
+    // Skip messages from admin only if they're bot commands or system messages
+    // Allow regular questions from admin for testing
+    if (userId.toString() === this.adminId && (text.startsWith('/') || text.includes('bot') || text.includes('test'))) {
+      console.log(`⏭️ Skipping admin command/system message`);
       return;
+    }
+    
+    if (userId.toString() === this.adminId) {
+      console.log(`👨‍💼 Processing message from admin (allowed for testing)`);
     }
 
     const groupInfo = this.activeGroups.get(chatId);
