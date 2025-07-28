@@ -87,6 +87,12 @@ async function getCompanyFromDomain(domain: string): Promise<CompanyData | null>
     return null;
   }
 
+  // Skip Clearbit if no API key provided
+  if (!process.env.CLEARBIT_API_KEY || process.env.CLEARBIT_API_KEY.trim() === '') {
+    console.log(`⚠️ Clearbit API key not provided - skipping company enrichment for ${domain}`);
+    return null;
+  }
+
   try {
     const response = await axios.get<{
       name: string;
@@ -96,7 +102,7 @@ async function getCompanyFromDomain(domain: string): Promise<CompanyData | null>
     }>(`https://company.clearbit.com/v1/domains/find?domain=${domain}`, {
       timeout: 5000,
       headers: {
-        'Authorization': `Bearer ${process.env.CLEARBIT_API_KEY || ''}`,
+        'Authorization': `Bearer ${process.env.CLEARBIT_API_KEY}`,
       },
     });
 
@@ -105,7 +111,13 @@ async function getCompanyFromDomain(domain: string): Promise<CompanyData | null>
       size: response.data.metrics?.employees,
     };
   } catch (error) {
-    console.error('Error getting company data:', error);
+    if (error.response?.status === 401) {
+      console.error('❌ Clearbit API key invalid - company enrichment disabled');
+    } else if (error.response?.status === 404) {
+      console.log(`ℹ️ No company data found for domain: ${domain}`);
+    } else {
+      console.error('⚠️ Error getting company data:', error.message);
+    }
     return null;
   }
 }
