@@ -14,6 +14,13 @@ router.post('/lead', async (req, res) => {
       });
     }
 
+    if (!leadData.telegramId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Telegram ID is required',
+      });
+    }
+
     const result = await processNewLead(leadData);
     
     if (result.success) {

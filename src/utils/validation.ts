@@ -29,7 +29,9 @@ export function validateLeadData(data: RawLeadData): ValidationResult {
     }
   }
 
-  if (data.telegramId && typeof data.telegramId === 'string') {
+  if (!data.telegramId || typeof data.telegramId !== 'string') {
+    errors.push('Telegram ID is required');
+  } else {
     const telegramId = data.telegramId.toString().trim();
     if (telegramId.startsWith('@')) {
       cleanedData.telegramId = telegramId.substring(1);
